@@ -24,12 +24,19 @@
             <artifactId>spark-hive_2.11</artifactId>
             <version>2.4.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.7</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
                 <configuration>
                     <!--这部分可有可无,加上的话则直接生成可运行jar包-->
                     <archive>
