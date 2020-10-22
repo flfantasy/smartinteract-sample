@@ -9,7 +9,10 @@ import org.verdictdb.jdbc41.VerdictConnection;
 import scala.Tuple2;
 
 /**
+ * 调用命令：
  * spark-submit --class org.daslab.VerdictSample xxx/xxx.jar "CREATE SCRAMBLE sample_table FROM origin_table RATIO 0.1"
+ * 采样后的表在hdfs里小文件太多，拖累后续的计算速度，需要整合，使用如下hql：
+ * create table new_table as select * from origin_table
  */
 public class VerdictSample {
     /**
