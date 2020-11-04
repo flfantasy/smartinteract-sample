@@ -9,10 +9,22 @@ import org.verdictdb.jdbc41.VerdictConnection;
 import scala.Tuple2;
 
 /**
- * 调用命令：
+ * 1、调用命令：
  * spark-submit --class org.daslab.VerdictSample xxx/xxx.jar "CREATE SCRAMBLE sample_table FROM origin_table RATIO 0.1"
- * 采样后的表在hdfs里小文件太多，拖累后续的计算速度，需要整合，使用如下hql：
+ * 由于一些未知的原因，可能导致新表未创建，但是hdfs中有新表数据；
+ * 可以根据具有相同表结构的表的创建语句（show create xxx），创建新表；
+ * 再在hdfs中将新表数据复制到新表目录下，再在hive中使用MSCK REPAIR TABLE XXX修复数据。
+ *
+ * 2、采样后的表在hdfs里parquet小文件太多，拖累后续的计算速度，需要整合，使用如下hql：
  * create table new_table as select * from origin_table
+ * 但是当小文件过于多时，该条语句执行时会产生大量map task和reduce task，创建了大量临时文件，超过了hive中配置的限制。
+ * 所以需要用parquet-tools来手动合并parquet文件。
+ * 先clone apache/parquet-mr的git项目，直接编译parquet-tools子项目（一定要在终端完成，记得使用-Plocal）
+ * 然后从hdfs上把parquet文件复制到linux，使用
+ * java -jar parquet-tools-1.12.0-SNAPSHOT.jar merge /input/ /output_file
+ * 再把合并后的parquet文件传到hdfs中对应目录，使用1中的方法建立成新表，再使用
+ * CREATE TABLE XXX AS SELECT * FROM YYY
+ * 真正合并为一个紧凑的表。
  */
 public class VerdictSample {
     /**
@@ -20,7 +32,7 @@ public class VerdictSample {
      * @param args
      */
     public static void main(String[] args) {
-        //CREATE SCRAMBLE sample_table FROM origin_table RATIO 0.1
+        //"CREATE SCRAMBLE sample_table FROM origin_table RATIO 0.1"
         String sql = args[0];
 
         SparkSession spark = SparkSession.builder().
